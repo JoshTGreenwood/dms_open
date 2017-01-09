@@ -1,35 +1,63 @@
 module App exposing (..)
 
 import Html exposing (Html, text, div, img)
-import Html.Attributes exposing (src)
+import Http
+import Json.Decode exposing (int, string, float, Decoder)
+import Json.Decode.Pipeline exposing (decode, required, optional, hardcoded)
+import Debug exposing (..)
+
+
+getMessages : Cmd Msg
+getMessages =
+    Http.send MessagesReceived <| (Http.get "http://localhost:3001/messages" decodeMessages)
+
+
+decodeMessages : Json.Decode.Decoder (List Message)
+decodeMessages =
+    (Json.Decode.list decodeMessage)
+
+
+decodeMessage : Decoder Message
+decodeMessage =
+    decode Message
+        |> required "text" string
+        |> required "sender_screen_name" string
 
 
 type alias Model =
+    { messages : List Message }
+
+
+type alias Message =
     { message : String
-    , logo : String
+    , sender_screen_name : String
     }
 
 
 init : String -> ( Model, Cmd Msg )
 init path =
-    ( { message = "Your Elm App is working!", logo = path }, Cmd.none )
+    ( { messages = [] }, getMessages )
 
 
 type Msg
-    = NoOp
+    = MessagesReceived (Result Http.Error (List Message))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( model, Cmd.none )
+    case msg of
+        MessagesReceived (Ok result) ->
+            ( { model | messages = result }, Cmd.none )
+
+        MessagesReceived (Result.Err err) ->
+            (log (toString err))
+                ( model, Cmd.none )
 
 
 view : Model -> Html Msg
 view model =
     div []
-        [ img [ src model.logo ] []
-        , div [] [ text model.message ]
-        ]
+        [ div [] [ text "hello world" ] ]
 
 
 subscriptions : Model -> Sub Msg
