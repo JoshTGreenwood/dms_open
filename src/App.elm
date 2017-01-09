@@ -1,6 +1,6 @@
 module App exposing (..)
 
-import Html exposing (Html, text, div, img)
+import Html exposing (Html, text, div, img, h1)
 import Http
 import Json.Decode exposing (int, string, float, Decoder)
 import Json.Decode.Pipeline exposing (decode, required, optional, hardcoded)
@@ -29,7 +29,7 @@ type alias Model =
 
 
 type alias Message =
-    { message : String
+    { text : String
     , sender_screen_name : String
     }
 
@@ -57,7 +57,12 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div []
-        [ div [] [ text "hello world" ] ]
+        [ div [] (List.map messageRow model.messages) ]
+
+messageRow : Message -> Html Msg
+messageRow message =
+    div []
+        [ text (message.sender_screen_name ++ ": " ++ message.text)]
 
 
 subscriptions : Model -> Sub Msg
